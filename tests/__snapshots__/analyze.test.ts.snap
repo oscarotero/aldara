@@ -90,3 +90,286 @@ snapshot[`analyze 1`] = `
   },
 }
 `;
+
+snapshot[`analyze remote 1`] = `
+{
+  EsmOptions: {
+    cjsExports: {
+      description: "Configure the cjs-exports option for each package",
+      required: false,
+      type: "Record",
+    },
+    deps: {
+      description: "Configure the deps for each package",
+      required: false,
+      type: "Record",
+    },
+    dev: {
+      description: "To include the ?dev option to all packages",
+      required: false,
+      type: "boolean",
+    },
+  },
+  Options: {
+    esm: {
+      children: {
+        cjsExports: {
+          description: "Configure the cjs-exports option for each package",
+          required: false,
+          type: "Record",
+        },
+        deps: {
+          description: "Configure the deps for each package",
+          required: false,
+          type: "Record",
+        },
+        dev: {
+          description: "To include the ?dev option to all packages",
+          required: false,
+          type: "boolean",
+        },
+      },
+      description: "Global options for esm.sh CDN used to fetch NPM packages",
+      required: true,
+      see: "https://esm.sh/#docs",
+      type: "object",
+    },
+    extensions: {
+      children: {
+        description: "The list of extensions this plugin applies to",
+        required: true,
+        type: "string",
+      },
+      description: "The list of extensions this plugin applies to",
+      required: true,
+      type: "array",
+    },
+    options: {
+      children: {
+        absWorkingDir: {
+          description: "Documentation: https://esbuild.github.io/api/#working-directory",
+          required: false,
+          type: "string",
+        },
+        alias: {
+          description: "Documentation: https://esbuild.github.io/api/#alias",
+          required: false,
+          type: "Record",
+        },
+        allowOverwrite: {
+          description: "Documentation: https://esbuild.github.io/api/#allow-overwrite",
+          required: false,
+          type: "boolean",
+        },
+        assetNames: {
+          description: "Documentation: https://esbuild.github.io/api/#asset-names",
+          required: false,
+          type: "string",
+        },
+        banner: {
+          children: {},
+          description: "Documentation: https://esbuild.github.io/api/#banner",
+          required: false,
+          type: "object",
+        },
+        bundle: {
+          description: "Documentation: https://esbuild.github.io/api/#bundle",
+          required: false,
+          type: "boolean",
+        },
+        chunkNames: {
+          description: "Documentation: https://esbuild.github.io/api/#chunk-names",
+          required: false,
+          type: "string",
+        },
+        conditions: {
+          children: {
+            description: "Documentation: https://esbuild.github.io/api/#conditions",
+            required: false,
+            type: "string",
+          },
+          description: "Documentation: https://esbuild.github.io/api/#conditions",
+          required: false,
+          type: "array",
+        },
+        entryNames: {
+          description: "Documentation: https://esbuild.github.io/api/#entry-names",
+          required: false,
+          type: "string",
+        },
+        entryPoints: {
+          type: "union",
+          union: [
+            {
+              children: {
+                description: "Documentation: https://esbuild.github.io/api/#entry-points",
+                required: false,
+                type: "string",
+              },
+              description: "Documentation: https://esbuild.github.io/api/#entry-points",
+              required: false,
+              type: "array",
+            },
+            {
+              description: "Documentation: https://esbuild.github.io/api/#entry-points",
+              required: false,
+              type: "Record",
+            },
+            {
+              children: {
+                children: {
+                  in: {
+                    required: true,
+                    type: "string",
+                  },
+                  out: {
+                    required: true,
+                    type: "string",
+                  },
+                },
+                description: "Documentation: https://esbuild.github.io/api/#entry-points",
+                required: false,
+                type: "object",
+              },
+              description: "Documentation: https://esbuild.github.io/api/#entry-points",
+              required: false,
+              type: "array",
+            },
+          ],
+        },
+        external: {
+          children: {
+            description: "Documentation: https://esbuild.github.io/api/#external",
+            required: false,
+            type: "string",
+          },
+          description: "Documentation: https://esbuild.github.io/api/#external",
+          required: false,
+          type: "array",
+        },
+        footer: {
+          children: {},
+          description: "Documentation: https://esbuild.github.io/api/#footer",
+          required: false,
+          type: "object",
+        },
+        inject: {
+          children: {
+            description: "Documentation: https://esbuild.github.io/api/#inject",
+            required: false,
+            type: "string",
+          },
+          description: "Documentation: https://esbuild.github.io/api/#inject",
+          required: false,
+          type: "array",
+        },
+        loader: {
+          children: {},
+          description: "Documentation: https://esbuild.github.io/api/#loader",
+          required: false,
+          type: "object",
+        },
+        mainFields: {
+          children: {
+            description: "Documentation: https://esbuild.github.io/api/#main-fields",
+            required: false,
+            type: "string",
+          },
+          description: "Documentation: https://esbuild.github.io/api/#main-fields",
+          required: false,
+          type: "array",
+        },
+        metafile: {
+          description: "Documentation: https://esbuild.github.io/api/#metafile",
+          required: false,
+          type: "boolean",
+        },
+        nodePaths: {
+          children: {
+            description: "Documentation: https://esbuild.github.io/api/#node-paths",
+            required: false,
+            type: "string",
+          },
+          description: "Documentation: https://esbuild.github.io/api/#node-paths",
+          required: false,
+          type: "array",
+        },
+        outExtension: {
+          children: {},
+          description: "Documentation: https://esbuild.github.io/api/#out-extension",
+          required: false,
+          type: "object",
+        },
+        outbase: {
+          description: "Documentation: https://esbuild.github.io/api/#outbase",
+          required: false,
+          type: "string",
+        },
+        outdir: {
+          description: "Documentation: https://esbuild.github.io/api/#outdir",
+          required: false,
+          type: "string",
+        },
+        outfile: {
+          description: "Documentation: https://esbuild.github.io/api/#outfile",
+          required: false,
+          type: "string",
+        },
+        plugins: {
+          children: {
+            description: "Documentation: https://esbuild.github.io/plugins/",
+            required: false,
+            type: "Plugin",
+          },
+          description: "Documentation: https://esbuild.github.io/plugins/",
+          required: false,
+          type: "array",
+        },
+        preserveSymlinks: {
+          description: "Documentation: https://esbuild.github.io/api/#preserve-symlinks",
+          required: false,
+          type: "boolean",
+        },
+        publicPath: {
+          description: "Documentation: https://esbuild.github.io/api/#public-path",
+          required: false,
+          type: "string",
+        },
+        resolveExtensions: {
+          children: {
+            description: "Documentation: https://esbuild.github.io/api/#resolve-extensions",
+            required: false,
+            type: "string",
+          },
+          description: "Documentation: https://esbuild.github.io/api/#resolve-extensions",
+          required: false,
+          type: "array",
+        },
+        splitting: {
+          description: "Documentation: https://esbuild.github.io/api/#splitting",
+          required: false,
+          type: "boolean",
+        },
+        stdin: {
+          description: "Documentation: https://esbuild.github.io/api/#stdin",
+          required: false,
+          type: "StdinOptions",
+        },
+        tsconfig: {
+          description: "Documentation: https://esbuild.github.io/api/#tsconfig",
+          required: false,
+          type: "string",
+        },
+        write: {
+          description: "Documentation: https://esbuild.github.io/api/#write",
+          required: false,
+          type: "boolean",
+        },
+      },
+      description: "The options for esbuild",
+      required: true,
+      type: "object",
+    },
+  },
+}
+`;

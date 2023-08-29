@@ -1,5 +1,3 @@
-import { doc } from "https://deno.land/x/deno_doc@0.64.0/mod.ts";
-
 import type {
   DocNode,
   JsDoc,
@@ -21,14 +19,35 @@ interface TypeProps {
 interface Options {
   // deno-lint-ignore no-explicit-any
   defaults?: any;
+  private?: boolean;
 }
 
 export interface NodeType extends TypeDef, TypeProps {}
 
-export default async function analyze(url: string, options: Options = {}) {
-  const docs = await doc(url, {
-    includeAll: true,
+export async function nativeDoc(
+  url: string,
+  includePrivate = false,
+): Promise<DocNode[]> {
+  const args = ["doc", "--json"];
+  if (includePrivate) {
+    args.push("--private");
+  }
+  args.push(url);
+  const command = new Deno.Command(Deno.execPath(), {
+    args,
+    stdout: "piped",
   });
+
+  const { stdout } = await command.output();
+
+  const decoder = new TextDecoder();
+  const json = decoder.decode(stdout);
+
+  return JSON.parse(json);
+}
+
+export default async function analyze(url: string, options: Options = {}) {
+  const docs = await nativeDoc(url, options.private);
 
   const schema: Record<string, Record<string, NodeType>> = {};
 
@@ -38,7 +57,7 @@ export default async function analyze(url: string, options: Options = {}) {
     }
 
     const name = doc.name;
-    schema[name] = handleInterfaceProperties(
+    schema[name] = await handleInterfaceProperties(
       doc.interfaceDef.properties,
       options.defaults?.[name],
     );
@@ -50,14 +69,17 @@ export default async function analyze(url: string, options: Options = {}) {
     return docs.find((t) => t.name === name);
   }
 
-  function handleInterfaceProperties(
+  async function handleInterfaceProperties(
     properties: LiteralPropertyDef[],
     defaults?: Record<string, unknown>,
   ) {
     const props: Record<string, NodeType> = {};
 
     for (const property of properties) {
-      const type = handleInterfaceProperty(property, defaults?.[property.name]);
+      const type = await handleInterfaceProperty(
+        property,
+        defaults?.[property.name],
+      );
 
       if (type) {
         props[property.name] = type;
@@ -68,10 +90,10 @@ export default async function analyze(url: string, options: Options = {}) {
     return props;
   }
 
-  function handleInterfaceProperty(
+  async function handleInterfaceProperty(
     property: LiteralPropertyDef,
     defaultValue?: unknown,
-  ): NodeType | undefined {
+  ): Promise<NodeType | undefined> {
     // @ts-ignore: tsDoc does not exist on LiteralPropertyDef
     const props: TypeProps = handleJsDoc(property.jsDoc);
 
@@ -88,16 +110,16 @@ export default async function analyze(url: string, options: Options = {}) {
     }
 
     if (property.tsType) {
-      return handleTsType(property.tsType, props);
+      return await handleTsType(property.tsType, props);
     }
 
     throw new Error("No tsType");
   }
 
-  function handleTsType(
+  async function handleTsType(
     tsType: TsTypeDef,
     props: TypeProps,
-  ): NodeType {
+  ): Promise<NodeType | undefined> {
     if (tsType.kind === "keyword") {
       return {
         type: tsType.repr,
@@ -106,7 +128,7 @@ export default async function analyze(url: string, options: Options = {}) {
     }
 
     if (tsType.kind === "array") {
-      const type = handleTsType(tsType.array, props);
+      const type = await handleTsType(tsType.array, props);
 
       if (type) {
         return {
@@ -120,7 +142,9 @@ export default async function analyze(url: string, options: Options = {}) {
     if (tsType.kind === "typeLiteral") {
       return {
         type: "object",
-        children: handleInterfaceProperties(tsType.typeLiteral.properties),
+        children: await handleInterfaceProperties(
+          tsType.typeLiteral.properties,
+        ),
         ...props,
       };
     }
@@ -136,33 +160,59 @@ export default async function analyze(url: string, options: Options = {}) {
       }
 
       if (ref.kind === "typeAlias") {
-        const type = handleTsType(ref.typeAliasDef.tsType, props);
-
-        return {
-          ...type,
-          subtype: tsType.repr,
-        };
+        const type = await handleTsType(ref.typeAliasDef.tsType, props);
+        return type
+          ? {
+            ...type,
+            subtype: tsType.repr,
+          }
+          : {
+            type: tsType.repr,
+            ...props,
+          };
       }
 
       if (ref.kind === "interface") {
         return {
           type: "object",
-          children: handleInterfaceProperties(ref.interfaceDef.properties),
+          children: await handleInterfaceProperties(
+            ref.interfaceDef.properties,
+          ),
           ...props,
         };
       }
+
+      if (ref.kind === "import") {
+        const doc = await nativeDoc(ref.importDef.src);
+        const type = doc.find((t) => t.name === ref.importDef.imported);
+
+        if (type?.kind === "interface") {
+          return {
+            type: "object",
+            children: await handleInterfaceProperties(
+              type.interfaceDef.properties,
+            ),
+            ...props,
+          };
+        }
+      }
+
+      throw new Error("Unhandled typeRef");
     }
 
     if (tsType.kind === "union") {
       return {
         type: "union",
-        union: tsType.union.map((t: TsTypeDef) => handleTsType(t, props)),
+        union: (await Promise.all(tsType.union.map((t: TsTypeDef) =>
+          handleTsType(t, props)
+        ))).filter((i) =>
+          i
+        ) as NodeType[],
       };
     }
 
-    console.log(tsType);
-
-    throw new Error("Unhandled tsType");
+    // console.log(tsType);
+    // throw new Error("Unhandled tsType");
   }
 }
 

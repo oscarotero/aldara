@@ -1,0 +1,92 @@
+export const snapshot = {};
+
+snapshot[`analyze 1`] = `
+{
+  Blog: {
+    authors: {
+      children: {
+        children: {
+          email: {
+            required: true,
+            type: "string",
+          },
+          name: {
+            required: true,
+            type: "string",
+          },
+        },
+        default: [],
+        required: true,
+        type: "object",
+      },
+      default: [],
+      required: true,
+      type: "array",
+    },
+    content: {
+      default: "Hello World",
+      required: true,
+      subtype: "Markdown",
+      type: "string",
+    },
+    date: {
+      default: 2020-01-01T00:00:00.000Z,
+      required: true,
+      type: "Date",
+    },
+    people: {
+      type: "union",
+      union: [
+        {
+          default: [],
+          required: true,
+          type: "string",
+        },
+        {
+          children: {
+            children: {
+              email: {
+                required: true,
+                type: "string",
+              },
+              name: {
+                required: true,
+                type: "string",
+              },
+            },
+            default: [],
+            required: true,
+            type: "object",
+          },
+          default: [],
+          required: true,
+          type: "array",
+        },
+      ],
+    },
+    subtitle: {
+      default: "subtitle",
+      required: false,
+      type: "string",
+    },
+    tags: {
+      children: {
+        default: [],
+        required: true,
+        subtype: "Tag",
+        type: "string",
+      },
+      default: [],
+      required: true,
+      type: "array",
+    },
+    title: {
+      default: "Hello World",
+      description: "Hello",
+      readonly: true,
+      required: true,
+      type: "string",
+    },
+  },
+}
+`;

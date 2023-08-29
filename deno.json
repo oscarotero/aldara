@@ -1,0 +1,6 @@
+{
+  "lock": false,
+  "tasks": {
+    "test": "deno test --allow-net --allow-read=tests --allow-write=tests/__snapshots__"
+  }
+}

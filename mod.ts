@@ -14,6 +14,7 @@ interface TypeDef {
 interface TypeProps {
   required?: boolean;
   readonly?: boolean;
+  default?: unknown;
   [key: string]: unknown;
 }
 interface Options {
@@ -208,6 +209,7 @@ export default async function analyze(url: string, options: Options = {}) {
         ))).filter((i) =>
           i
         ) as NodeType[],
+        ...props,
       };
     }
 

@@ -57,7 +57,6 @@ interface Options {
 interface Status extends Options {
   url: string;
   depth: number;
-  cache: Map<string, DocNode[]>;
 }
 
 export default async function analyze(url: string, options: Options = {}) {
@@ -83,13 +82,14 @@ export default async function analyze(url: string, options: Options = {}) {
 }
 
 const decoder = new TextDecoder();
+const cache = new Map<string, DocNode[]>();
 
 export async function doc(
   url: string,
   status: Status,
 ): Promise<DocNode[]> {
-  if (status.cache.has(url)) {
-    return status.cache.get(url)!;
+  if (cache.has(url)) {
+    return cache.get(url)!;
   }
   const args = ["doc", "--json"];
   if (status.private) {
@@ -110,8 +110,8 @@ export async function doc(
 
   const json = decoder.decode(stdout);
   console.log(url);
-  status.cache.set(url, JSON.parse(json));
-  return status.cache.get(url)!;
+  cache.set(url, JSON.parse(json));
+  return cache.get(url)!;
 }
 
 async function typeAll(

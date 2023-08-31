@@ -14,7 +14,7 @@ export interface Blog {
   /** @default "subtitle" */
   subtitle?: string;
   content: Markdown;
-  date: Date;
+  readonly date: Date;
   tags: Tag[];
   authors: {
     name: string;

@@ -20,7 +20,7 @@ import type {
   TsTypeTypeOperatorDef,
   TsTypeTypeRefDef,
   TsTypeUnionDef,
-} from "https://deno.land/x/deno_doc@0.64.0/types.d.ts";
+} from "https://deno.land/x/deno_doc@0.73.0/types.d.ts";
 
 type Type =
   | "any"
@@ -68,6 +68,7 @@ export default async function analyze(url: string, options: Options = {}) {
   };
   const nodes = await doc(url, status);
   const schema: Record<string, NodeType> = {};
+  console.log(nodes);
 
   for (const node of nodes) {
     // Only exported interfaces
@@ -498,6 +499,7 @@ function cast(str: string) {
   return str;
 }
 
+// deno-lint-ignore no-explicit-any
 export function mergeDefaults(node: NodeType, defaults: any, override = false) {
   switch (node.type) {
     case "object":

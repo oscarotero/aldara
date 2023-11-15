@@ -2,5 +2,10 @@
   "lock": false,
   "tasks": {
     "test": "deno test --allow-net --allow-read --allow-run --allow-write=tests/__snapshots__ --reporter=dot"
+  },
+  "fmt": {
+    "exclude": [
+      "CHANGELOG.md"
+    ]
   }
 }

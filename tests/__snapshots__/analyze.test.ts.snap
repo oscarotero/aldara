@@ -546,6 +546,7 @@ snapshot[`analyze remote 1`] = `
         },
         description: "The options for esbuild",
         optional: false,
+        see: "https://esbuild.github.io/api/#general-options",
         type: "object",
         typeName: "BuildOptions",
       },

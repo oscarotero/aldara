@@ -1,6 +1,6 @@
 import analyze, { mergeDefaults } from "../mod.ts";
 import { defaults } from "./types.ts";
-import { assertSnapshot } from "https://deno.land/std@0.220.1/testing/snapshot.ts";
+import { assertSnapshot } from "./deps.ts";
 
 Deno.test("analyze", async (t) => {
   const schema = await analyze(import.meta.resolve("./types.ts"), {

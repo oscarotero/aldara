@@ -20,7 +20,7 @@ import type {
   TsTypeTypeOperatorDef,
   TsTypeTypeRefDef,
   TsTypeUnionDef,
-} from "https://deno.land/x/deno_doc@0.117.0/types.d.ts";
+} from "https://deno.land/x/deno_doc@0.125.0/types.d.ts";
 
 type Type =
   | "any"
@@ -463,6 +463,11 @@ function jsDoc(jsDoc?: JsDoc): TypeProps {
 
           const [, key, value] = match;
           doc[key] = value ? cast(value) : true;
+          continue;
+        }
+
+        if (kind === "see") {
+          doc[kind] = tag.doc;
           continue;
         }
 

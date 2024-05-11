@@ -9,6 +9,7 @@ interface People {
 export interface Blog {
   /** Hello
   @readonly
+  @see https://example.com
    */
   title: string;
   /** @default "subtitle" */

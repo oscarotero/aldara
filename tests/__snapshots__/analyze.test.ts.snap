@@ -79,6 +79,7 @@ snapshot[`analyze 1`] = `
         description: "Hello",
         optional: false,
         readonly: true,
+        see: "https://example.com",
         type: "string",
       },
     },

@@ -165,6 +165,8 @@ async function typeAll(
       return { ...await typeParenthesized(node, status), ...props };
     case "enum":
       return { ...await typeEnum(node, status), ...props };
+    case "mapped":
+      return { type: "object", ...props };
     default:
       console.log(node);
       throw new Error(`Unhandled node kind "${node.kind}"`);
@@ -375,6 +377,11 @@ function typeLiteral(node: TsTypeDefLiteral, _status: Status): NodeType {
     case "boolean":
       return {
         type: node.literal.kind,
+      };
+    case "number":
+      return {
+        type: node.literal.kind,
+        value: node.literal.number,
       };
     default:
       console.log(node);

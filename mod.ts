@@ -111,7 +111,7 @@ export async function doc(
 
   const json = decoder.decode(stdout);
   console.log(url);
-  cache.set(url, JSON.parse(json));
+  cache.set(url, JSON.parse(json).nodes || []);
   return cache.get(url)!;
 }
 

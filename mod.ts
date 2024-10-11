@@ -91,7 +91,7 @@ export async function doc(
   if (cache.has(url)) {
     return cache.get(url)!;
   }
-  const args = ["doc", "--json"];
+  const args = ["doc", "--json", "--allow-import"];
   if (status.private) {
     args.push("--private");
   }

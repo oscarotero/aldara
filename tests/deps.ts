@@ -1,1 +1,1 @@
-export { assertSnapshot } from "https://deno.land/std@0.224.0/testing/snapshot.ts";
+export { assertSnapshot } from "jsr:@std/testing@1.0.15/snapshot";

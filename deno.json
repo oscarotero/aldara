@@ -2,7 +2,7 @@
   "lock": false,
   "tasks": {
     "test": "deno test --allow-net --allow-read --allow-run --allow-write=tests/__snapshots__ --reporter=dot",
-    "update-deps": "deno run -A 'https://deno.land/x/nudd@v0.2.3/cli.ts' update deno.json mod.ts tests/deps.ts"
+    "update-deps": "deno run -A 'https://deno.land/x/nudd@v0.2.10/cli.ts' update deno.json mod.ts tests/deps.ts"
   },
   "fmt": {
     "exclude": [

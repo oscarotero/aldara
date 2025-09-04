@@ -20,7 +20,7 @@ import type {
   TsTypeTypeOperatorDef,
   TsTypeTypeRefDef,
   TsTypeUnionDef,
-} from "https://deno.land/x/deno_doc@0.125.0/types.d.ts";
+} from "jsr:@deno/doc@0.183.0";
 
 type Type =
   | "any"

@@ -170,7 +170,7 @@ async function typeAll(
     case "indexedAccess":
       return { type: "any" };
     default:
-      console.log(node,status);
+      console.log(node);
       throw new Error(`Unhandled node kind "${node.kind}"`);
   }
 }

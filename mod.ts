@@ -167,8 +167,10 @@ async function typeAll(
       return { ...await typeEnum(node, status), ...props };
     case "mapped":
       return { type: "object", ...props };
+    case "indexedAccess":
+      return { type: "any" };
     default:
-      console.log(node);
+      console.log(node,status);
       throw new Error(`Unhandled node kind "${node.kind}"`);
   }
 }

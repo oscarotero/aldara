@@ -91,7 +91,7 @@ export async function doc(
   if (cache.has(url)) {
     return cache.get(url)!;
   }
-  const args = ["doc", "--json", "--allow-import"];
+  const args = ["doc", "--json", "--allow-import", "--reload", "--no-lock"];
   if (status.private) {
     args.push("--private");
   }
@@ -168,6 +168,8 @@ async function typeAll(
     case "mapped":
       return { type: "object", ...props };
     case "indexedAccess":
+      return { type: "any" };
+    case "intersection":
       return { type: "any" };
     default:
       console.log(node);

@@ -1,1 +1,1 @@
-export { assertSnapshot } from "jsr:@std/testing@1.0.15/snapshot";
+export { assertSnapshot } from "jsr:@std/testing@1.0.17/snapshot";

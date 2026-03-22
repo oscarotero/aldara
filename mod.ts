@@ -20,7 +20,7 @@ import type {
   TsTypeTypeOperatorDef,
   TsTypeTypeRefDef,
   TsTypeUnionDef,
-} from "jsr:@deno/doc@0.183.0";
+} from "jsr:@deno/doc@0.194.1";
 
 type Type =
   | "any"
@@ -168,8 +168,8 @@ async function typeAll(
     case "mapped":
       return { type: "object", ...props };
     case "indexedAccess":
-      return { type: "any" };
     case "intersection":
+    case "reference":
       return { type: "any" };
     default:
       console.log(node);

@@ -91,7 +91,7 @@ export async function doc(
   if (cache.has(url)) {
     return cache.get(url)!;
   }
-  const args = ["doc", "--json", "--allow-import", "--reload", "--no-lock"];
+  const args = ["doc", "--json", "--allow-import", "--no-lock"];
   if (status.private) {
     args.push("--private");
   }
@@ -170,6 +170,7 @@ async function typeAll(
     case "indexedAccess":
     case "intersection":
     case "reference":
+    case "importType":
       return { type: "any" };
     default:
       console.log(node);

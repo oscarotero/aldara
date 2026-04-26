@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this
 project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.3.0] - 2026-04-26
+### Changed
+- Updated `@deno/docs` and use it to analyze the packages instead of the `deno doc` command.
+
 ## [0.2.5] - 2026-03-22
 ### Fixed
 - Support for `importType` types.
@@ -46,6 +50,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.1.0] - 2023-09-01
 First version
 
+[0.3.0]: https://github.com/oscarotero/typescheme/compare/v0.2.5...v0.3.0
 [0.2.5]: https://github.com/oscarotero/typescheme/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/oscarotero/typescheme/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/oscarotero/typescheme/compare/v0.2.2...v0.2.3

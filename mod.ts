@@ -1,26 +1,21 @@
-import type {
-  ClassPropertyDef,
-  DocNode,
-  DocNodeClass,
-  DocNodeEnum,
-  DocNodeImport,
-  DocNodeInterface,
-  DocNodeTypeAlias,
-  InterfacePropertyDef,
-  JsDoc,
-  LiteralPropertyDef,
-  TsTypeArrayDef,
-  TsTypeDef,
-  TsTypeDefLiteral,
-  TsTypeFnOrConstructorDef,
-  TsTypeKeywordDef,
-  TsTypeParenthesizedDef,
-  TsTypeTupleDef,
-  TsTypeTypeLiteralDef,
-  TsTypeTypeOperatorDef,
-  TsTypeTypeRefDef,
-  TsTypeUnionDef,
-} from "jsr:@deno/doc@0.194.1";
+import {
+  type ClassPropertyDef,
+  type Declaration,
+  doc,
+  type InterfacePropertyDef,
+  type LiteralPropertyDef,
+  type TsTypeArrayDef,
+  type TsTypeDef,
+  type TsTypeDefLiteral,
+  type TsTypeFnOrConstructorDef,
+  type TsTypeKeywordDef,
+  type TsTypeParenthesizedDef,
+  type TsTypeTupleDef,
+  type TsTypeTypeLiteralDef,
+  type TsTypeTypeOperatorDef,
+  type TsTypeTypeRefDef,
+  type TsTypeUnionDef,
+} from "jsr:@deno/doc@0.198.0";
 
 type Type =
   | "any"
@@ -66,114 +61,59 @@ export default async function analyze(url: string, options: Options = {}) {
     cache: new Map(),
     ...options,
   };
-  const nodes = await doc(url, status);
+
+  const records = await doc([url]);
+  const symbols = records[url].symbols;
+
   const schema: Record<string, NodeType> = {};
 
-  for (const node of nodes) {
+  for (const symbol of symbols) {
+    const name = symbol.name;
     // Only exported interfaces
-    if (node.declarationKind === "export" && node.kind === "interface") {
-      const { name } = node;
+    const declaration = symbol.declarations.find((d) =>
+      d.declarationKind === "export" && d.kind === "interface"
+    );
 
-      schema[name] = await typeInterface(node, status);
+    if (declaration) {
+      schema[name] = await typeInterface(name, declaration, status);
     }
   }
 
   return schema;
 }
 
-const decoder = new TextDecoder();
-const cache = new Map<string, DocNode[]>();
-
-export async function doc(
-  url: string,
-  status: Status,
-): Promise<DocNode[]> {
-  if (cache.has(url)) {
-    return cache.get(url)!;
-  }
-  const args = ["doc", "--json", "--allow-import", "--no-lock"];
-  if (status.private) {
-    args.push("--private");
-  }
-  args.push(url);
-  const command = new Deno.Command(Deno.execPath(), {
-    args,
-    stdout: "piped",
-  });
-
-  const { stdout, stderr } = await command.output();
-
-  if (stderr.length) {
-    const error = decoder.decode(stderr);
-    console.error(error);
-    // throw new Error(error);
-  }
-
-  const json = decoder.decode(stdout);
-  console.log(url);
-  cache.set(url, JSON.parse(json).nodes || []);
-  return cache.get(url)!;
-}
-
 async function typeAll(
-  node: DocNode | TsTypeDef,
+  node: TsTypeDef,
   status: Status,
 ): Promise<NodeType> {
-  // @ts-ignore: jsDoc does not exist on TsTypeDef
-  const doc = node.jsDoc as JsDoc | undefined;
-  const props = jsDoc(doc);
-
-  // @ts-ignore: optional does not exist on TsTypeDef
-  if (typeof node.optional === "boolean") {
-    // @ts-ignore: optional does not exist on TsTypeDef
-    props.optional = node.optional;
-  }
-
-  // @ts-ignore: readonly does not exist on TsTypeDef
-  if (node.readonly) {
-    props.readonly = true;
-  }
-
   switch (node.kind) {
-    case "interface":
-      return { ...await typeInterface(node, status), ...props };
-    case "class":
-      return { ...await typeClass(node, status), ...props };
     case "typeRef":
-      return { ...await typeRef(node, status), ...props };
-    case "import":
-      return { ...await typeImport(node, status), ...props };
-    case "typeAlias":
-      return { ...await typeAlias(node, status), ...props };
+      return await typeRef(node, status);
     case "union":
-      return { ...await typeUnion(node, status), ...props };
+      return await typeUnion(node, status);
     case "array":
-      return { ...await typeArray(node, status), ...props };
+      return await typeArray(node, status);
     case "tuple":
-      return { ...await typeTuple(node, status), ...props };
+      return await typeTuple(node, status);
     case "literal":
-      return { ...typeLiteral(node, status), ...props };
+      return typeLiteral(node, status);
     case "typeLiteral":
-      return { ...await typeLiteralObject(node, status), ...props };
+      return await typeLiteralObject(node, status);
     case "typeOperator":
-      return { ...await typeOperator(node, status), ...props };
+      return await typeOperator(node, status);
     case "keyword":
-      return { ...typeKeyword(node, status), ...props };
+      return typeKeyword(node, status);
     case "fnOrConstructor":
-      return { ...typefnOrConstructor(node, status), ...props };
+      return typefnOrConstructor(node, status);
     case "parenthesized":
-      return { ...await typeParenthesized(node, status), ...props };
-    case "enum":
-      return { ...await typeEnum(node, status), ...props };
+      return await typeParenthesized(node, status);
     case "mapped":
-      return { type: "object", ...props };
+      return { type: "object" };
     case "indexedAccess":
     case "intersection":
-    case "reference":
     case "importType":
       return { type: "any" };
     default:
-      console.log(node);
       throw new Error(`Unhandled node kind "${node.kind}"`);
   }
 }
@@ -196,38 +136,24 @@ async function children(
       continue;
     }
 
-    // @ts-ignore: jsDoc does not exist on InterfacePropertyDef
-    const props = jsDoc(property.jsDoc as JsDoc | undefined);
-    props.optional = property.optional;
-    if (property.readonly) {
-      props.readonly = true;
-    }
-
-    children[name] = { ...await typeAll(tsType, status), ...props };
+    children[name] = await typeAll(tsType, status);
   }
   status.depth--;
   return children;
 }
 
 async function typeInterface(
-  node: DocNodeInterface,
+  name: string,
+  declaration: Declaration,
   status: Status,
 ): Promise<NodeType> {
-  return {
-    type: "object",
-    children: await children(node.interfaceDef.properties, status),
-    typeName: node.name,
-  };
-}
+  // @ts-ignore declaration.def is not defined
+  const properties = declaration.def.properties;
 
-async function typeClass(
-  node: DocNodeClass,
-  status: Status,
-): Promise<NodeType> {
   return {
     type: "object",
-    children: await children(node.classDef.properties, status),
-    typeName: node.name,
+    children: await children(properties, status),
+    typeName: name,
   };
 }
 
@@ -237,7 +163,7 @@ async function typeLiteralObject(
 ): Promise<NodeType> {
   return {
     type: "object",
-    children: await children(node.typeLiteral.properties, status),
+    children: await children(node.value.properties ?? [], status),
   };
 }
 
@@ -245,21 +171,20 @@ async function typeParenthesized(
   node: TsTypeParenthesizedDef,
   status: Status,
 ): Promise<NodeType> {
-  return await typeAll(node.parenthesized, status);
+  return await typeAll(node.value, status);
 }
 
 async function typeOperator(
   node: TsTypeTypeOperatorDef,
   status: Status,
 ): Promise<NodeType> {
-  const { operator, tsType } = node.typeOperator;
+  const { operator, tsType } = node.value;
   const type = await typeAll(tsType, status);
   switch (operator) {
     case "readonly":
       type.readonly = true;
       break;
     default:
-      console.log(node);
       throw new Error(`Unhandled operator kind "${operator}"`);
   }
   return type;
@@ -270,19 +195,18 @@ async function typeRef(
   status: Status,
 ): Promise<NodeType> {
   // Partial is a special case
-  const { typeName } = node.typeRef;
-  switch (typeName) {
+  switch (node.repr) {
     case "Partial": {
-      const type = node.typeRef.typeParams?.[0];
+      const type = node.value.typeParams?.[0];
 
       if (!type) {
-        throw new Error(`Partial type "${typeName}" not found`);
+        throw new Error(`Partial type "${node.repr}" not found`);
       }
 
       return await typeAll(type, status);
     }
     case "Record": {
-      const [key, value] = node.typeRef.typeParams ?? [];
+      const [key, value] = node.value.typeParams ?? [];
 
       if (!value) {
         throw new Error(`Record type "${value}" not found`);
@@ -298,46 +222,10 @@ async function typeRef(
     }
   }
 
-  // Find the type reference
-  const nodes = await doc(status.url, status);
-  const type = nodes.find((t) => t.name === node.typeRef.typeName);
-
-  if (type) {
-    return await typeAll(type, status);
-  }
-
   return {
     type: "object",
-    typeName,
+    typeName: node.repr,
   };
-}
-
-async function typeImport(
-  node: DocNodeImport,
-  status: Status,
-): Promise<NodeType> {
-  const previousUrl = status.url;
-  status.url = node.importDef.src;
-  const nodes = await doc(node.importDef.src, status);
-  const type = nodes.find((t) => t.name === node.importDef.imported);
-
-  if (type) {
-    const types = await typeAll(type, status);
-    status.url = previousUrl;
-    return types;
-  }
-
-  return {
-    type: "object",
-    typeName: node.importDef.imported,
-  };
-}
-
-async function typeAlias(
-  node: DocNodeTypeAlias,
-  status: Status,
-): Promise<NodeType> {
-  return await typeAll(node.typeAliasDef.tsType, status);
 }
 
 async function typeUnion(
@@ -346,7 +234,7 @@ async function typeUnion(
 ): Promise<NodeType> {
   return {
     type: "union",
-    children: await Promise.all(node.union.map((t) => typeAll(t, status))),
+    children: await Promise.all(node.value.map((t) => typeAll(t, status))),
   };
 }
 
@@ -356,7 +244,7 @@ async function typeArray(
 ): Promise<NodeType> {
   return {
     type: "array",
-    children: await typeAll(node.array, status),
+    children: await typeAll(node.value, status),
   };
 }
 
@@ -367,35 +255,34 @@ async function typeTuple(
   return {
     type: "array",
     children: await Promise.all(
-      node.tuple.map((node) => typeAll(node, status)),
+      node.value.map((node) => typeAll(node, status)),
     ),
   };
 }
 
 function typeLiteral(node: TsTypeDefLiteral, _status: Status): NodeType {
-  switch (node.literal.kind) {
+  switch (node.value.kind) {
     case "string":
       return {
-        type: node.literal.kind,
-        value: node.literal.string,
+        type: node.value.kind,
+        value: node.value.string,
       };
     case "boolean":
       return {
-        type: node.literal.kind,
+        type: node.value.kind,
       };
     case "number":
       return {
-        type: node.literal.kind,
-        value: node.literal.number,
+        type: node.value.kind,
+        value: node.value.number,
       };
     default:
-      console.log(node);
-      throw new Error(`Unhandled literal kind "${node.literal.kind}"`);
+      throw new Error(`Unhandled literal kind "${node.value.kind}"`);
   }
 }
 
-function typeKeyword(node: TsTypeKeywordDef, _status: Status): NodeType {
-  switch (node.keyword) {
+function typeKeyword(keyword: TsTypeKeywordDef, _status: Status): NodeType {
+  switch (keyword.value) {
     case "string":
     case "boolean":
     case "number":
@@ -403,15 +290,14 @@ function typeKeyword(node: TsTypeKeywordDef, _status: Status): NodeType {
     case "undefined":
     case "null":
       return {
-        type: node.keyword,
+        type: keyword.value,
       };
     case "unknown":
       return {
         type: "any",
       };
     default:
-      console.log(node);
-      throw new Error(`Unhandled keyword kind "${node.keyword}"`);
+      throw new Error(`Unhandled keyword kind "${keyword.value}"`);
   }
 }
 
@@ -419,100 +305,15 @@ function typefnOrConstructor(
   node: TsTypeFnOrConstructorDef,
   _status: Status,
 ): NodeType {
-  if (node.fnOrConstructor.constructor === false) {
+  if (node.value.constructor === false) {
     return {
       type: "function",
     };
   }
 
-  console.log(node);
   throw new Error(
-    `Unhandled fnOrConstructor kind "${node.fnOrConstructor.constructor}"`,
+    `Unhandled fnOrConstructor kind "${node.value.constructor}"`,
   );
-}
-
-async function typeEnum(
-  node: DocNodeEnum,
-  status: Status,
-): Promise<NodeType> {
-  const children = {} as Record<string, NodeType>;
-
-  for (const member of node.enumDef.members) {
-    const { name, init } = member;
-
-    if (!init) {
-      throw new Error(`Enum "${node.name}" member "${name}" has no init`);
-    }
-
-    children[name] = await typeAll(init, status);
-  }
-
-  return {
-    type: "enum",
-    children,
-  };
-}
-
-function jsDoc(jsDoc?: JsDoc): TypeProps {
-  const doc: TypeProps = {};
-
-  if (jsDoc) {
-    const { doc: description, tags } = jsDoc;
-
-    if (description) {
-      doc.description = description;
-    }
-
-    if (tags) {
-      for (const tag of tags) {
-        const { kind } = tag;
-        if (kind === "unsupported") {
-          const match = tag.value.match(/@(\w+)(?:\s+(.+))?/);
-
-          if (!match) {
-            continue;
-          }
-
-          const [, key, value] = match;
-          doc[key] = value ? cast(value) : true;
-          continue;
-        }
-
-        if (kind === "see") {
-          doc[kind] = tag.doc;
-          continue;
-        }
-
-        // @ts-ignore: value does not exist on JsDocTag
-        doc[kind] = tag.value ?? true;
-      }
-    }
-
-    return doc;
-  }
-
-  return doc;
-}
-
-function cast(str: string) {
-  switch (str.toLowerCase()) {
-    case "true":
-      return true;
-    case "false":
-      return false;
-  }
-  if (/^\d+$/.test(str)) {
-    return Number(str);
-  }
-
-  // Unquote string
-  if (
-    (str.startsWith('"') && str.endsWith('"')) ||
-    (str.startsWith("'") && str.endsWith("'"))
-  ) {
-    return str.slice(1, -1);
-  }
-  return str;
 }
 
 // deno-lint-ignore no-explicit-any
